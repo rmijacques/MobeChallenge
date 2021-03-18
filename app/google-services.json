@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "316618647984",
+    "firebase_url": "https://challengemobe-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "challengemobe",
+    "storage_bucket": "challengemobe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316618647984:android:a148aae2e28022f2048e75",
+        "android_client_info": {
+          "package_name": "com.m2dl.challengemobe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "316618647984-4cqk1sfkvldcoc8t1pi8302kccugrrnb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHKWxzY_kwmg-t4dZjQCBilQd4oJG5k-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "316618647984-4cqk1sfkvldcoc8t1pi8302kccugrrnb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
