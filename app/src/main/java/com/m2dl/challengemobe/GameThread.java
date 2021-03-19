@@ -1,10 +1,8 @@
 package com.m2dl.challengemobe;
 
 import android.graphics.Canvas;
-import android.os.Build;
 import android.view.SurfaceHolder;
 
-import androidx.annotation.RequiresApi;
 
 public class GameThread extends Thread {
     private SurfaceHolder surfaceHolder;

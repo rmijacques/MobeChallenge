@@ -119,7 +119,6 @@ public class GameActivity extends Activity implements SensorEventListener {
         float rayonBalle = 100;
         if ((gameViewWidth < (rayonBalle + x) || (x - rayonBalle) < 0) ||
                 (gameViewHeight < (rayonBalle + y) || (y - rayonBalle) < 0)) {
-            // TODO: aller a l'activité Game Over avec le
             long score = (new Date().getTime() - startDate.getTime()) / 1000;
             if (!gameOver) {
                 gameOver = true;
