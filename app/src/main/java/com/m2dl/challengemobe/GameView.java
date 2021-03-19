@@ -74,7 +74,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             Paint paint = new Paint();
 
 
-            /*float lightValue = context.getLightValue();
+            float lightValue = context.getLightValue();
             float maxLight = 1200;
 
 
@@ -83,11 +83,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             int red = Color.red(rgb);
             int green = Color.green(rgb);
             int blue = Color.blue(rgb);
-            *
 
-            paint.setColor(Color.rgb(red, green, blue));
 
-             */
+            paint.setColor(Color.rgb(0, 0, 0));
+
+
             canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
         }
     }
