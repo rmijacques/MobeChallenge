@@ -26,11 +26,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private GameActivity context;
     private Canvas canvas;
-
-    public void setInclinaison(double inclinaison) {
-        this.inclinaison = inclinaison;
-    }
-
     private double inclinaison;
     private int contextHeight;
     private int contextWidth;
@@ -119,8 +114,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawCircle(x, y, 50, paint);
 
 
-            Paint paint = new Paint();
-
             canvas.drawCircle(20,0+contextHeight, 100, paint);
 
 //
@@ -129,17 +122,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
 
-    public void goToGameOver(int score){
-        thread.setRunning(false);
-        //go to gameover activity
-            paint.setColor(Color.rgb(0, 0, 0));
-            calculTrajectoire();
-            
 
-            canvas.drawCircle(x,y, 100, paint);
-            drawAllObstacles(canvas);
-        }
-    }
 
 
 
@@ -169,26 +152,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public boolean checkIfPlayerHitAnyObstacle(){
-        for (Point obstacle : obstacles) {
-            if((circlePosition.x+100 >= obstacle.x && circlePosition.x <= obstacle.x + OBSTACLE_HEIGHT) || (circlePosition.y - 100 >= obstacle.y && circlePosition.y<=obstacle.y + OBSTACLE_HEIGHT))
-            {
-                System.out.println("Collision avec un obstacle haaaaaaaaaaaaaa");
-                return true;
-            }
 
-        }
-        return false;
-    }
     public void calculTrajectoire(){
         x = (float) (cos(a)*v0*t + x0);
         y = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
         //y = contextHeight - y;
         t = t+0.25f;
     }
-    public Point getCirclePosition() {
-        return circlePosition;
+
+    public void setInclinaison(double inclinaison) {
+        this.inclinaison = inclinaison;
     }
+
+
 
 
 }
