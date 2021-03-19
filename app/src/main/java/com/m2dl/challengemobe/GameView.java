@@ -25,8 +25,12 @@ import java.util.Random;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import static java.lang.Math.toIntExact;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
+
+    static enum etat {WAITING, LAUNCHING, LAUNCHED};
+
     private GameThread thread;
     private GameActivity context;
     private Canvas canvas;
@@ -34,25 +38,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
-    private int bgXPosition = 0;
+    private double bgXPosition = 0;
+    private double bgYPosition = 0;
     private Bitmap bitmap;
     private int bgHeight;
     private int bgWidth;
     private int bgFullWidth;
+    private int bgFullHeight;
     private Date lastDrawDate;
     double vitesse = 1.2; // 12 km/h
-
+    long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
 
 
-    private float x0 = 100;
-    private float y0;
-    private float backgroundX;
-    private float backgroundY;
+
+
     private float a;
-    private float t;
-    private float v0;
     private float g;
 
     public GameView(GameActivity context) {
@@ -74,11 +76,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         createRandomObstacle();
 
 
-        x0 = 100;
-        y0 = contextHeight / 2;
-        g = 0.5f;
+
+        g = 0.125f;
         a = (float) (Math.PI / 4);
-        v0 = 25;
 
     }
 
@@ -87,6 +87,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         bgHeight = (bitmap.getHeight()) / 2;
         bgWidth = (bitmap.getWidth()) / 3;
         bgFullWidth = bitmap.getWidth();
+        bgFullHeight = bitmap.getHeight();
     }
 
     private int getNavigationBarHeight(GameActivity context) {
@@ -137,6 +138,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (canvas != null) {
             Date d = new Date();
             long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
+            tempsGlobal += tempsPasse;
             lastDrawDate = d;
             drawBackground(canvas, tempsPasse);
 
@@ -145,7 +147,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
-            canvas.drawCircle(backgroundX, backgroundY, 50, paint);
+            canvas.drawCircle(200, contextHeight/2, 50, paint);
 
             paint.setColor(Color.rgb(0, 0, 0));
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
@@ -154,8 +156,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
-        bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
-        Rect srcRectForRender = new Rect(bgXPosition, bgHeight, bgXPosition + bgWidth, bgHeight * 2);
+        //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
+        if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
+        if (bgYPosition <= 0) bgYPosition = 0;
+        Rect srcRectForRender = new Rect((int)bgXPosition, (int)(bgHeight-bgYPosition), (int)(bgXPosition + bgWidth), (int)(bgHeight * 2 - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
         canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
     }
@@ -192,10 +196,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
-        backgroundX = (float) (cos(a) * v0 * t + x0);
-        backgroundY = (float) ((-0.5) * g * t * t + sin(a) * v0 * t + y0);
-        //y = contextHeight - y;
-        t = t + 0.25f;
+        double v = vitesse*20;
+        bgXPosition =  (cos(a) * v * tempsGlobal);
+        bgYPosition =  ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
+        if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
+        //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
+        if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
+        if (bgYPosition <= 0) bgYPosition = 0;
+        System.out.println("bgx "+ bgXPosition);
+        System.out.println("bgy "+ bgYPosition);
+
+
     }
 
     public void setInclinaison(double inclinaison) {
