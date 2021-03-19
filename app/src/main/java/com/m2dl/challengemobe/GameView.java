@@ -301,4 +301,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         return res;
     }
+
+    public boolean hasCollidedWithBird(int xPlayer,int yPlayer) {
+        for (Birds bird : obstacles) {
+            if (xPlayer + 100 >= bird.getP().x && xPlayer <= bird.getP().x + 100 && yPlayer + 100 >= bird.getP().y && yPlayer <= bird.getP().y) {
+                System.out.println("COLLISSSIOOISIISNSJOSIDISDOIS");
+                return true;
+            }
+        }
+        return false;
+    }
 }
