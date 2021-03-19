@@ -42,7 +42,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int cloudsAndTreesFullWidth;
     private int cloudsAndTreesFullHeight;
     private int cloudsAndTreesXPosition = 0;
-
+    private int jetpackYpos;
     private GameThread thread;
     private GameActivity context;
     private Canvas canvas;
@@ -94,7 +94,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         createRandomObstacle();
 
         a = (float) (Math.PI / 4);
-
+        jetpackYpos=contextHeight/2;
     }
 
     private void initBackground() {
@@ -221,7 +221,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
-        canvas.drawBitmap(rotatedBitmap, 30, contextHeight / 2, myPaint);
+        canvas.drawBitmap(rotatedBitmap, 30, jetpackYpos, myPaint);
     }
 
     public void createRandomObstacle() {
@@ -255,6 +255,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
+        System.out.println("calculer trajectoire");
         double v = vitesse * 20;
         double g = 0.1;
 
@@ -271,6 +272,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setInclinaison(double inclinaison) {
         this.inclinaison = inclinaison;
+        if(etat == gamestate.LAUNCHED) {
+            jeatpackincl = (int) (-inclinaison * 200);
+            System.out.println(jeatpackincl);
+            if (jetpackYpos < contextHeight+20 && jeatpackincl < 100) {
+                jetpackYpos = (int) (jetpackYpos + 10);
+                System.out.println("dessend");
+            }
+            else if(jetpackYpos >= 0 && (jeatpackincl > 100 || jeatpackincl<-100)) {
+                jetpackYpos = (int) (jetpackYpos - 10);
+                System.out.println("monte");
+
+
+            }
+            System.out.println(bgYPosition);
+        }
     }
 
     public Bitmap randomBird() {

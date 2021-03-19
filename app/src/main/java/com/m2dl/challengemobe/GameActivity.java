@@ -39,6 +39,8 @@ public class GameActivity extends Activity implements SensorEventListener {
     private Integer gameViewWidth;
     private boolean gameOver;
     private boolean isLinkedToSensors;
+    private SensorManager senSensorManager;
+    private Sensor senAccelerometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,10 @@ public class GameActivity extends Activity implements SensorEventListener {
     private void setUpSensors() {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+        gameRotationVectorSensor = sensorManager.getDefaultSensor(27);
+        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
 
         if (!isLinkedToSensors) listenToSensors();
     }
@@ -115,43 +120,16 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.equals(lightSensor)) {
-            lightValue = sensorEvent.values[0];
-        } else if (sensorEvent.sensor.equals(gameRotationVectorSensor)) {
-            double pitch;
-            double tilt;
-            double azimuth;
-            double[] g = convertFloatsToDoubles(sensorEvent.values.clone());
-
-            //Normalise
-            double norm = Math.sqrt(g[0] * g[0] + g[1] * g[1] + g[2] * g[2] + g[3] * g[3]);
-            g[0] /= norm;
-            g[1] /= norm;
-            g[2] /= norm;
-            g[3] /= norm;
-
-            //Set values to commonly known quaternion letter representatives
-            double x = g[0];
-            double y = g[1];
-            double z = g[2];
-            double w = g[3];
-
-            //Calculate Pitch in degrees (-180 to 180)
-            double sinP = 2.0 * (w * x + y * z);
-            double cosP = 1.0 - 2.0 * (x * x + y * y);
-            pitch = Math.atan2(sinP, cosP) * (180 / Math.PI);
-
-            //Calculate Tilt in degrees (-90 to 90)
-            double sinT = 2.0 * (w * y - z * x);
-            if (Math.abs(sinT) >= 1)
-                tilt = Math.copySign(Math.PI / 2, sinT) * (180 / Math.PI);
-            else
-                tilt = Math.asin(sinT) * (180 / Math.PI);
-            // de -90 à 90
-            gameView.setInclinaison(tilt);
+        Sensor mySensor = sensorEvent.sensor;
+        if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+            gameView.setInclinaison(y);
+        }
         }
 
-    }
+
 
     private void checkGameOver(float x, float y) {
         float rayonBalle = 100;
