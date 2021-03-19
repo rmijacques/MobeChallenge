@@ -18,6 +18,7 @@ public class GameThread extends Thread {
         super();
         this.surfaceHolder = surfaceHolder;
         this.gameView = gameView;
+
     }
 
     @Override

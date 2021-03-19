@@ -24,7 +24,8 @@ import static java.lang.Math.sin;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private GameActivity context;
-    private Point circlePosition;
+    private Canvas canvas;
+    private double inclinaison;
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
@@ -103,6 +104,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
+
             canvas.drawColor(Color.BLUE);
             Paint paint = new Paint();
             paint.setColor(Color.rgb(0, 0, 0));
@@ -111,24 +113,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawCircle(backgroundX, backgroundY, 50, paint);
 
 
-            float lightValue = context.getLightValue();
-            float maxLight = 1200;
+            canvas.drawCircle(20,0+contextHeight, 100, paint);
 
 
-            float hue = (lightValue / maxLight) * 359.f;
-            int rgb = ColorUtils.HSLToColor(new float[]{hue, 1f, .6f});
-            int red = Color.red(rgb);
-            int green = Color.green(rgb);
-            int blue = Color.blue(rgb);
-
-            paint.setColor(Color.rgb(0, 0, 0));
-            calculTrajectoire();
-            
-
-            canvas.drawCircle(backgroundX, backgroundY, 100, paint);
             drawAllObstacles(canvas);
         }
     }
+
 
 
 
@@ -138,6 +129,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         Point obstacle = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
         obstacles.add(obstacle);
     }
+
 
 
     //A modifier en fonction de la position du background
@@ -158,29 +150,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public boolean checkIfPlayerHitAnyObstacle(){
-        for (Point obstacle : obstacles) {
-            if((circlePosition.x+100 >= obstacle.x && circlePosition.x <= obstacle.x + OBSTACLE_HEIGHT) || (circlePosition.y - 100 >= obstacle.y && circlePosition.y<=obstacle.y + OBSTACLE_HEIGHT))
-            {
-                System.out.println("Collision avec un obstacle haaaaaaaaaaaaaa");
-                return true;
-            }
 
-        }
-        return false;
-    }
     public void calculTrajectoire(){
         backgroundX = (float) (cos(a)*v0*t + x0);
         backgroundY = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
         //y = contextHeight - y;
         t = t+0.25f;
     }
-    public Point getCirclePosition() {
-        return circlePosition;
+
+    public void setInclinaison(double inclinaison) {
+        this.inclinaison = inclinaison;
     }
 
-    public void setCirclePosition(Point circlePosition) {
-        this.circlePosition = circlePosition;
-    }
+
+
 
 }
