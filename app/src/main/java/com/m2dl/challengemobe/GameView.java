@@ -11,6 +11,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.shapes.OvalShape;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -43,6 +45,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int cloudsAndTreesFullHeight;
     private int cloudsAndTreesXPosition = 0;
 
+    public void setDragPoint(int x, int y) {
+        dragPoint.set(x, y);
+    }
+
+    public  Point dragPoint;
     private GameThread thread;
     private GameActivity context;
     private Canvas canvas;
@@ -64,6 +71,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
+
+    public void setEtat(gamestate etat) {
+        this.etat = etat;
+    }
+
     private gamestate etat;
     private boolean first = true;
 
@@ -86,6 +98,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextHeight = displayMetrics.heightPixels + getNavigationBarHeight(context);
         contextWidth = displayMetrics.widthPixels;
 
+        dragPoint = new Point(300, contextHeight/2);
         initBackground();
         initCloudsAndTrees();
         lastDrawDate = new Date();
@@ -178,6 +191,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             calculTrajectoire();
         drawJetPack(canvas);
         paint.setColor(Color.rgb(0, 0, 0));
+
+        canvas.drawCircle(300, contextHeight/2, 50, paint);
+        paint.setStrokeWidth(5.f);
+        canvas.drawLine(150,contextHeight/2 - 100, dragPoint.x, dragPoint.y, paint);
+        canvas.drawLine(dragPoint.x, dragPoint.y, 450,contextHeight/2 +100, paint);
         drawAllObstacles(canvas);
 
     }

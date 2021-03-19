@@ -10,6 +10,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -54,7 +56,6 @@ public class GameActivity extends Activity implements SensorEventListener {
         decorView.setSystemUiVisibility(uiOptions);
 
 
-        sensitivity = 1.0;
 
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
@@ -89,6 +90,20 @@ public class GameActivity extends Activity implements SensorEventListener {
 
         startDate = new Date();
 
+        gameLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_MOVE){
+                    gameView.setDragPoint((int)event.getX(), (int) event.getY());
+                    gameView.refreshDrawableState();
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    gameView.setEtat(GameView.gamestate.LAUNCHING);
+                }
+
+                return true;
+            }
+        });
 
         gameView.post(new Runnable() {
             @Override
