@@ -39,7 +39,7 @@ public class Birds {
         Random rn = new Random();
         this.p=point;
         this.b=bitmap;
-        this.accellerator= rn.nextInt(30) + 1;
+        this.accellerator= rn.nextInt(30) + 10;
 
     }
 }
