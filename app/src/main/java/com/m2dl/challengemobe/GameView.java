@@ -10,13 +10,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
-import androidx.core.graphics.ColorUtils;
 
 import java.util.Date;
 import java.util.ArrayList;
@@ -25,11 +23,19 @@ import java.util.Random;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static java.lang.Math.toIntExact;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
-    static enum etat {WAITING, LAUNCHING, LAUNCHED};
+    private Bitmap cloudsAndTreesBitmap;
+    private int cloudsAndTreesHeight;
+    private int cloudsAndTreesWidth;
+    private int cloudsAndTreesFullWidth;
+    private int cloudsAndTreesFullHeight;
+    private int cloudsAndTreesXPosition = 0;
+
+    static enum etat {WAITING, LAUNCHING, LAUNCHED}
+
+    ;
 
     private GameThread thread;
     private GameActivity context;
@@ -40,7 +46,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private SharedPreferences sharedPref;
     private double bgXPosition = 0;
     private double bgYPosition = 0;
-    private Bitmap bitmap;
+    private Bitmap bgBitmap;
     private int bgHeight;
     private int bgWidth;
     private int bgFullWidth;
@@ -52,13 +58,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private List<Birds> obstacles;
 
 
-
-
     private float a;
     private float g;
 
-    private int newEnnemiTime=150;
-    private int newEnnemiCompteur=0;
+    private int newEnnemiTime = 150;
+    private int newEnnemiCompteur = 0;
 
 
     public GameView(GameActivity context) {
@@ -73,10 +77,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextWidth = displayMetrics.widthPixels;
 
         initBackground();
+        initCloudsAndTrees();
         lastDrawDate = new Date();
 
         obstacles = new ArrayList<>();
-
 
 
         g = 0.125f;
@@ -85,12 +89,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void initBackground() {
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
-        bgHeight = (bitmap.getHeight()) / 2;
-        bgWidth = (bitmap.getWidth()) / 3;
-        bgFullWidth = bitmap.getWidth();
-        bgFullHeight = bitmap.getHeight();
+        bgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        bgHeight = (bgBitmap.getHeight()) / 2;
+        bgWidth = (bgBitmap.getWidth()) / 3;
+        bgFullWidth = bgBitmap.getWidth();
+        bgFullHeight = bgBitmap.getHeight();
     }
+
+    private void initCloudsAndTrees() {
+        cloudsAndTreesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.clouds);
+        cloudsAndTreesHeight = (cloudsAndTreesBitmap.getHeight());
+        cloudsAndTreesWidth = (int) (cloudsAndTreesBitmap.getWidth() / 7.81);
+        cloudsAndTreesFullWidth = cloudsAndTreesBitmap.getWidth();
+        cloudsAndTreesFullHeight = cloudsAndTreesBitmap.getHeight();
+    }
+
 
     private int getNavigationBarHeight(GameActivity context) {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -138,8 +151,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
-            newEnnemiCompteur+=1;
-            if(checkNewEnnemiTime()){
+            newEnnemiCompteur += 1;
+            if (checkNewEnnemiTime()) {
                 createRandomObstacle();
                 System.out.println("create bird");
             }
@@ -148,13 +161,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             tempsGlobal += tempsPasse;
             lastDrawDate = d;
             drawBackground(canvas, tempsPasse);
-
+            drawCloudAndTrees(canvas, tempsPasse);
 
             Paint paint = new Paint();
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
-            canvas.drawCircle(200, contextHeight/2, 50, paint);
+            canvas.drawCircle(200, contextHeight / 2, 50, paint);
 
             paint.setColor(Color.rgb(0, 0, 0));
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
@@ -166,9 +179,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
-        Rect srcRectForRender = new Rect((int)bgXPosition, (int)(bgHeight-bgYPosition), (int)(bgXPosition + bgWidth), (int)(bgHeight * 2 - bgYPosition));
-        Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
-        canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
+        Rect srcRectForRender = new Rect((int) bgXPosition, (int) (bgHeight - bgYPosition), (int) (bgXPosition + bgWidth), (int) (bgHeight * 2 - bgYPosition));
+        Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
+        canvas.drawBitmap(bgBitmap, srcRectForRender, dstRectForRender, null);
+    }
+
+    private void drawCloudAndTrees(Canvas canvas, long tempsPasse) {
+        if (cloudsAndTreesXPosition >= cloudsAndTreesFullWidth - cloudsAndTreesWidth)
+            cloudsAndTreesXPosition = 0;
+        cloudsAndTreesXPosition += (int) (tempsPasse * vitesse);
+        Rect srcRectForRender = new Rect((int) cloudsAndTreesXPosition, (int)(0 - bgYPosition), cloudsAndTreesXPosition + cloudsAndTreesWidth, (int) (cloudsAndTreesHeight - bgYPosition));
+        Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
+        canvas.drawBitmap(cloudsAndTreesBitmap, srcRectForRender, dstRectForRender, null);
     }
 
     public void createRandomObstacle() {
@@ -185,8 +207,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
-            obstacle.getP().x = obstacle.getP().x -obstacle.getAccellerator();
-            if(obstacle.getP().x <= 0) {
+            obstacle.getP().x = obstacle.getP().x - obstacle.getAccellerator();
+            if (obstacle.getP().x <= 0) {
                 obstacle.getP().x = obstacle.getP().x - 10;
                 System.out.println("x=" + obstacle.getP().x);
             }
@@ -206,15 +228,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
-        double v = vitesse*20;
-        bgXPosition =  (cos(a) * v * tempsGlobal);
-        bgYPosition =  ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
+        double v = vitesse * 20;
+        bgXPosition = (cos(a) * v * tempsGlobal);
+        bgYPosition = ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
         //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
-        System.out.println("bgx "+ bgXPosition);
-        System.out.println("bgy "+ bgYPosition);
+        System.out.println("bgx " + bgXPosition);
+        System.out.println("bgy " + bgYPosition);
 
     }
 
@@ -242,13 +264,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public boolean checkNewEnnemiTime() {
-        Boolean res=false;
-        if (newEnnemiCompteur>= newEnnemiTime){
-            newEnnemiCompteur=0;
-            res=true;
-        }
-        else{
-            newEnnemiCompteur+=1;
+        Boolean res = false;
+        if (newEnnemiCompteur >= newEnnemiTime) {
+            newEnnemiCompteur = 0;
+            res = true;
+        } else {
+            newEnnemiCompteur += 1;
         }
         return res;
     }
