@@ -1,5 +1,6 @@
 package com.m2dl.challengemobe;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,9 +34,7 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     private LinearLayout buttonsLayout;
     private LinearLayout gameLayout;
-    private ImageButton sensitivityPlusButton;
-    private ImageButton sensitivityMoinsButton;
-    private TextView sensitivityInfo;
+
     private Date startDate;
     private Integer gameViewHeight;
     private Integer gameViewWidth;
@@ -56,7 +57,6 @@ public class GameActivity extends Activity implements SensorEventListener {
         decorView.setSystemUiVisibility(uiOptions);
 
 
-        sensitivity = 1.0;
 
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
@@ -91,6 +91,21 @@ public class GameActivity extends Activity implements SensorEventListener {
 
         startDate = new Date();
 
+        gameLayout.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_MOVE){
+                    gameView.setDragPoint((int)event.getX(), (int) event.getY());
+                    gameView.refreshDrawableState();
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    gameView.setEtat(GameView.gamestate.LAUNCHING);
+                }
+
+                return true;
+            }
+        });
 
         gameView.post(new Runnable() {
             @Override
@@ -108,6 +123,7 @@ public class GameActivity extends Activity implements SensorEventListener {
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+
 
         if (!isLinkedToSensors) listenToSensors();
     }

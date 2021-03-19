@@ -11,6 +11,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.shapes.OvalShape;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -43,6 +45,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int cloudsAndTreesFullHeight;
     private int cloudsAndTreesXPosition = 0;
     private int jetpackYpos;
+
+    public Point dragPoint;
     private GameThread thread;
     private GameActivity context;
     private Canvas canvas;
@@ -64,6 +68,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
+
+    public void setEtat(gamestate etat) {
+        this.etat = etat;
+    }
+
     private gamestate etat;
     private boolean first = true;
 
@@ -86,6 +95,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextHeight = displayMetrics.heightPixels + getNavigationBarHeight(context);
         contextWidth = displayMetrics.widthPixels;
 
+        dragPoint = new Point(300, contextHeight / 2);
         initBackground();
         initCloudsAndTrees();
         lastDrawDate = new Date();
@@ -167,31 +177,44 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         Date d = new Date();
         long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
-        tempsGlobal += tempsPasse;
+
         lastDrawDate = d;
-        drawBackground(canvas, tempsPasse);
-        drawCloudAndTrees(canvas, tempsPasse);
 
         Paint paint = new Paint();
         paint.setColor(Color.rgb(0, 0, 0));
-        if (etat == gamestate.WAITING)
+        if (etat == gamestate.LAUNCHING) {
+            tempsGlobal += tempsPasse;
+            drawBackground(canvas);
             calculTrajectoire();
+            drawCloudAndTrees(canvas, tempsPasse);
+        } else if (etat == gamestate.WAITING) {
+            drawBackground(canvas);
+            paint.setStrokeWidth(5.f);
+            canvas.drawLine(150, contextHeight / 2 - 100, dragPoint.x, dragPoint.y, paint);
+            canvas.drawLine(dragPoint.x, dragPoint.y, 450, contextHeight / 2 + 100, paint);
+            drawAllObstacles(canvas);
+        } else if (etat == gamestate.LAUNCHED) {
+            avancerBackground(tempsPasse);
+            drawBackground(canvas);
+            drawCloudAndTrees(canvas, tempsPasse);
+        }
         drawJetPack(canvas);
-        paint.setColor(Color.rgb(0, 0, 0));
-        drawAllObstacles(canvas);
+
 
     }
 
-    private void drawBackground(Canvas canvas, long tempsPasse) {
+    private void drawBackground(Canvas canvas) {
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
-        if (etat == gamestate.LAUNCHED)
-            bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
 
         Rect srcRectForRender = new Rect((int) bgXPosition, (int) (bgHeight - bgYPosition), (int) (bgXPosition + bgWidth), (int) (bgHeight * 2 - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
         canvas.drawBitmap(bgBitmap, srcRectForRender, dstRectForRender, null);
+    }
+
+    private void avancerBackground(long tempsPasse) {
+        bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
     }
 
     private void drawCloudAndTrees(Canvas canvas, long tempsPasse) {
@@ -221,7 +244,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
-        canvas.drawBitmap(rotatedBitmap, 30, jetpackYpos, myPaint);
+        if (etat.equals(gamestate.WAITING)) {
+            canvas.drawBitmap(rotatedBitmap, dragPoint.x - resized.getWidth() / 2, dragPoint.y - resized.getHeight() / 2, myPaint);
+        } else {
+            canvas.drawBitmap(rotatedBitmap, resized.getWidth() / 2, resized.getHeight() / 2, myPaint);
+        }
     }
 
     public void createRandomObstacle() {
@@ -317,4 +344,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         return res;
     }
+
+    public boolean hasCollidedWithBird(int xPlayer, int yPlayer) {
+        for (Birds bird : obstacles) {
+            if (xPlayer + 100 >= bird.getP().x && xPlayer <= bird.getP().x + 100 && yPlayer + 100 >= bird.getP().y && yPlayer <= bird.getP().y) {
+                System.out.println("COLLISSSIOOISIISNSJOSIDISDOIS");
+                return true;
+            }
+        }
+        return false;
+    }
+  
+    public void setDragPoint(int x, int y) {
+        dragPoint.set(x, y);
+    }
+
 }
