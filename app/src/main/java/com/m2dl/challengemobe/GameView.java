@@ -44,10 +44,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int cloudsAndTreesFullWidth;
     private int cloudsAndTreesFullHeight;
     private int cloudsAndTreesXPosition = 0;
-
-    public void setDragPoint(int x, int y) {
-        dragPoint.set(x, y);
-    }
+    private int jetpackYpos;
 
     public Point dragPoint;
     private GameThread thread;
@@ -107,7 +104,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         createRandomObstacle();
 
         a = (float) (Math.PI / 4);
-
+        jetpackYpos=contextHeight/2;
     }
 
     private void initBackground() {
@@ -285,6 +282,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
+        System.out.println("calculer trajectoire");
         double v = vitesse * 20;
         double g = 0.1;
 
@@ -301,6 +299,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setInclinaison(double inclinaison) {
         this.inclinaison = inclinaison;
+        if(etat == gamestate.LAUNCHED) {
+            jeatpackincl = (int) (-inclinaison * 200);
+            System.out.println(jeatpackincl);
+            if (jetpackYpos < contextHeight+20 && jeatpackincl < 100) {
+                jetpackYpos = (int) (jetpackYpos + 10);
+                System.out.println("dessend");
+            }
+            else if(jetpackYpos >= 0 && (jeatpackincl > 100 || jeatpackincl<-100)) {
+                jetpackYpos = (int) (jetpackYpos - 10);
+                System.out.println("monte");
+
+
+            }
+            System.out.println(bgYPosition);
+        }
     }
 
     public Bitmap randomBird() {
@@ -341,4 +354,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         return false;
     }
+  
+    public void setDragPoint(int x, int y) {
+        dragPoint.set(x, y);
+    }
+
 }
