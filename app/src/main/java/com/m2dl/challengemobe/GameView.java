@@ -12,6 +12,9 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private GameActivity context;
@@ -19,7 +22,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
-
+    private float x0=100;
+    private float y0;
+    private float x;
+    private float y;
+    private float a;
+    private float t;
+    private float v0;
+    private float g;
 
     public GameView(GameActivity context) {
         super(context);
@@ -31,9 +41,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         contextHeight = displayMetrics.heightPixels;
         contextWidth = displayMetrics.widthPixels;
-        circlePosition = new Point(contextWidth / 2, contextHeight / 2);
-
-
+        x0 = 100;
+        y0 = contextHeight/2;
+        g = 0.5f;
+        a = (float) (Math.PI/4);
+        v0 = 25;
     }
 
     public GameThread getThread() {
@@ -70,28 +82,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
-            canvas.drawColor(Color.WHITE);
+            canvas.drawColor(Color.BLUE);
             Paint paint = new Paint();
-
-
-            float lightValue = context.getLightValue();
-            float maxLight = 1200;
-
-
-            float hue = (lightValue / maxLight) * 359.f;
-            int rgb = ColorUtils.HSLToColor(new float[]{hue, 1f, .6f});
-            int red = Color.red(rgb);
-            int green = Color.green(rgb);
-            int blue = Color.blue(rgb);
-
-
             paint.setColor(Color.rgb(0, 0, 0));
 
+            calculTrajectoire();
+            canvas.drawCircle(x, y, 50, paint);
 
-            canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+
+
         }
     }
-
+    public void calculTrajectoire(){
+        x = (float) (cos(a)*v0*t + x0);
+        y = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
+        //y = contextHeight - y;
+        t = t+0.25f;
+    }
     public Point getCirclePosition() {
         return circlePosition;
     }
