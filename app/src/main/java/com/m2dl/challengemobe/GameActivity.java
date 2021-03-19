@@ -34,9 +34,7 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     private LinearLayout buttonsLayout;
     private LinearLayout gameLayout;
-    private ImageButton sensitivityPlusButton;
-    private ImageButton sensitivityMoinsButton;
-    private TextView sensitivityInfo;
+
     private Date startDate;
     private Integer gameViewHeight;
     private Integer gameViewWidth;
@@ -120,6 +118,7 @@ public class GameActivity extends Activity implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+
 
         if (!isLinkedToSensors) listenToSensors();
     }
