@@ -104,7 +104,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         createRandomObstacle();
 
         a = (float) (Math.PI / 4);
-        jetpackYpos=contextHeight/2;
+        jetpackYpos = contextHeight / 2;
     }
 
     private void initBackground() {
@@ -218,6 +218,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void drawCloudAndTrees(Canvas canvas, long tempsPasse) {
+        System.out.println(vitesse);
         if (cloudsAndTreesXPosition >= cloudsAndTreesFullWidth - cloudsAndTreesWidth)
             cloudsAndTreesXPosition = 0;
         cloudsAndTreesXPosition += (int) (tempsPasse * vitesse);
@@ -282,7 +283,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
-        System.out.println("calculer trajectoire");
         double v = vitesse * 20;
         double g = 0.1;
 
@@ -292,27 +292,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) {
             bgYPosition = 0;
-            if (!first) etat = gamestate.LAUNCHED;
-            else first = false;
+            if (!first) {
+                etat = gamestate.LAUNCHED;
+                vitesse = 1.5;
+            } else first = false;
         }
     }
 
     public void setInclinaison(double inclinaison) {
         this.inclinaison = inclinaison;
-        if(etat == gamestate.LAUNCHED) {
+        if (etat == gamestate.LAUNCHED) {
             jeatpackincl = (int) (-inclinaison * 200);
-            System.out.println(jeatpackincl);
-            if (jetpackYpos < contextHeight+20 && jeatpackincl < 100) {
+            if (jetpackYpos < contextHeight + 20 && jeatpackincl < 100) {
                 jetpackYpos = (int) (jetpackYpos + 10);
-                System.out.println("dessend");
-            }
-            else if(jetpackYpos >= 0 && (jeatpackincl > 100 || jeatpackincl<-100)) {
+            } else if (jetpackYpos >= 0 && (jeatpackincl > 100 || jeatpackincl < -100)) {
                 jetpackYpos = (int) (jetpackYpos - 10);
-                System.out.println("monte");
-
-
             }
-            System.out.println(bgYPosition);
         }
     }
 
@@ -348,13 +343,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean hasCollidedWithBird(int xPlayer, int yPlayer) {
         for (Birds bird : obstacles) {
             if (xPlayer + 100 >= bird.getP().x && xPlayer <= bird.getP().x + 100 && yPlayer + 100 >= bird.getP().y && yPlayer <= bird.getP().y) {
-                System.out.println("COLLISSSIOOISIISNSJOSIDISDOIS");
                 return true;
             }
         }
         return false;
     }
-  
+
     public void setDragPoint(int x, int y) {
         dragPoint.set(x, y);
     }
