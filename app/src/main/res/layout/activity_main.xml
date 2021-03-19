@@ -73,7 +73,7 @@
         android:layout_height="71dp"
         android:layout_marginEnd="52dp"
         android:background="#6066DC"
-        android:text="Start game"
+        android:text="Start game ou secouer la tablette"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
