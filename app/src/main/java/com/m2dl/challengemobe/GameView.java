@@ -7,10 +7,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -18,7 +18,6 @@ import android.view.SurfaceView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
-import androidx.core.graphics.ColorUtils;
 
 import java.util.Date;
 import java.util.ArrayList;
@@ -27,13 +26,22 @@ import java.util.Random;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static java.lang.Math.toIntExact;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
 
     static enum etat {WAITING, LAUNCHING, LAUNCHED};
+    private Bitmap cloudsAndTreesBitmap;
+    private int cloudsAndTreesHeight;
+    private int cloudsAndTreesWidth;
+    private int cloudsAndTreesFullWidth;
+    private int cloudsAndTreesFullHeight;
+    private int cloudsAndTreesXPosition = 0;
+
+    static enum etat {WAITING, LAUNCHING, LAUNCHED}
+
+    ;
 
     private GameThread thread;
     private GameActivity context;
@@ -44,10 +52,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private SharedPreferences sharedPref;
     private double bgXPosition = 0;
     private double bgYPosition = 0;
-    private Bitmap bitmap;
+    private Bitmap bgBitmap;
     private int bgHeight;
     private int bgWidth;
     private int bgFullWidth;
+    private double lastbypos;
+    private int jeatpackincl=0;
     private int bgFullHeight;
     private Date lastDrawDate;
     double vitesse = 1.7; // 12 km/h
@@ -56,13 +66,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private List<Birds> obstacles;
 
 
-
-
     private float a;
     private float g;
 
-    private int newEnnemiTime=150;
-    private int newEnnemiCompteur=0;
+    private int newEnnemiTime = 150;
+    private int newEnnemiCompteur = 0;
 
 
     public GameView(GameActivity context) {
@@ -77,11 +85,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextWidth = displayMetrics.widthPixels;
 
         initBackground();
+        initCloudsAndTrees();
         lastDrawDate = new Date();
 
         obstacles = new ArrayList<>();
         createRandomObstacle();
-
 
         g = 0.125f;
         a = (float) (Math.PI / 4);
@@ -89,12 +97,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void initBackground() {
-        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
-        bgHeight = (bitmap.getHeight()) / 2;
-        bgWidth = (bitmap.getWidth()) / 3;
-        bgFullWidth = bitmap.getWidth();
-        bgFullHeight = bitmap.getHeight();
+        bgBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        bgHeight = (bgBitmap.getHeight()) / 2;
+        bgWidth = (bgBitmap.getWidth()) / 3;
+        bgFullWidth = bgBitmap.getWidth();
+        bgFullHeight = bgBitmap.getHeight();
     }
+
+    private void initCloudsAndTrees() {
+        cloudsAndTreesBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.clouds);
+        cloudsAndTreesHeight = (cloudsAndTreesBitmap.getHeight());
+        cloudsAndTreesWidth = (int) (cloudsAndTreesBitmap.getWidth() / 7.81);
+        cloudsAndTreesFullWidth = cloudsAndTreesBitmap.getWidth();
+        cloudsAndTreesFullHeight = cloudsAndTreesBitmap.getHeight();
+    }
+
 
     private int getNavigationBarHeight(GameActivity context) {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -141,28 +158,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        if (canvas != null) {
-            newEnnemiCompteur+=1;
-            if(checkNewEnnemiTime()){
-                createRandomObstacle();
-                System.out.println("create bird");
-            }
-            Date d = new Date();
-            long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
-            tempsGlobal += tempsPasse;
-            lastDrawDate = d;
-            drawBackground(canvas, tempsPasse);
-
-
-            Paint paint = new Paint();
-            paint.setColor(Color.rgb(0, 0, 0));
-
-            calculTrajectoire();
-            canvas.drawCircle(200, contextHeight/2, 50, paint);
-            drawAllObstacles(canvas);
-            paint.setColor(Color.rgb(0, 0, 0));
-            // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+        if (canvas == null) return;
+      
+        newEnnemiCompteur += 1;
+        if (checkNewEnnemiTime()) {
+            createRandomObstacle();
+            System.out.println("create bird");
         }
+        Date d = new Date();
+        long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
+        tempsGlobal += tempsPasse;
+        lastDrawDate = d;
+        drawBackground(canvas, tempsPasse);
+        drawCloudAndTrees(canvas, tempsPasse);
+
+        Paint paint = new Paint();
+        paint.setColor(Color.rgb(0, 0, 0));
+
+        calculTrajectoire();
+        drawJetPack(canvas);
+        paint.setColor(Color.rgb(0, 0, 0));
+              drawAllObstacles(canvas);
+
+
     }
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
@@ -170,9 +188,42 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
-        Rect srcRectForRender = new Rect((int)bgXPosition, (int)(bgHeight-bgYPosition), (int)(bgXPosition + bgWidth), (int)(bgHeight * 2 - bgYPosition));
+
+        Rect srcRectForRender = new Rect((int) bgXPosition, (int) (bgHeight - bgYPosition), (int) (bgXPosition + bgWidth), (int) (bgHeight * 2 - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
-        canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
+        canvas.drawBitmap(bgBitmap, srcRectForRender, dstRectForRender, null);
+    }
+
+    private void drawCloudAndTrees(Canvas canvas, long tempsPasse) {
+        if (cloudsAndTreesXPosition >= cloudsAndTreesFullWidth - cloudsAndTreesWidth)
+            cloudsAndTreesXPosition = 0;
+        cloudsAndTreesXPosition += (int) (tempsPasse * vitesse);
+        Rect srcRectForRender = new Rect((int) cloudsAndTreesXPosition, (int)(0 - bgYPosition), cloudsAndTreesXPosition + cloudsAndTreesWidth, (int) (cloudsAndTreesHeight - bgYPosition));
+        Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
+        canvas.drawBitmap(cloudsAndTreesBitmap, srcRectForRender, dstRectForRender, null);
+    }
+    public void drawJetPack(Canvas canvas){
+        Resources res = getResources();
+        Bitmap bitmapJetPack = BitmapFactory.decodeResource(res, R.drawable.jetpack);
+        Paint myPaint = new Paint();
+        Bitmap resized = Bitmap.createScaledBitmap(bitmapJetPack, 250, 250, true);
+        Matrix matrix = new Matrix();
+
+        if(bgYPosition>=lastbypos) {
+            matrix.postRotate(0);
+        }
+        else{
+            if(jeatpackincl<180){
+                jeatpackincl+=5;
+                matrix.postRotate(jeatpackincl);
+
+            }
+        }
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
+        canvas.drawBitmap(rotatedBitmap,30, contextHeight/2,  myPaint);
+
+
     }
 
     public void createRandomObstacle() {
@@ -189,8 +240,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
-            obstacle.getP().x = obstacle.getP().x -obstacle.getAccellerator();
-            if(obstacle.getP().x <= 0) {
+            obstacle.getP().x = obstacle.getP().x - obstacle.getAccellerator();
+            if (obstacle.getP().x <= 0) {
                 obstacle.getP().x = obstacle.getP().x - 10;
                 System.out.println("x=" + obstacle.getP().x);
             }
@@ -210,15 +261,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void calculTrajectoire() {
-        double v = vitesse*20;
-        bgXPosition =  (cos(a) * v * tempsGlobal);
-        bgYPosition =  ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
+        double v = vitesse * 20;
+        bgXPosition = (cos(a) * v * tempsGlobal);
+        bgYPosition = ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
-        if (bgYPosition <= 0) {
-            bgYPosition = 0;
-        }
 
+        if (bgYPosition <= 0) bgYPosition = 0;
+        System.out.println("bgx " + bgXPosition);
+        System.out.println("bgy " + bgYPosition);
 
     }
 
@@ -246,13 +297,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public boolean checkNewEnnemiTime() {
-        Boolean res=false;
-        if (newEnnemiCompteur>= newEnnemiTime){
-            newEnnemiCompteur=0;
-            res=true;
-        }
-        else{
-            newEnnemiCompteur+=1;
+        Boolean res = false;
+        if (newEnnemiCompteur >= newEnnemiTime) {
+            newEnnemiCompteur = 0;
+            res = true;
+        } else {
+            newEnnemiCompteur += 1;
         }
         return res;
     }
