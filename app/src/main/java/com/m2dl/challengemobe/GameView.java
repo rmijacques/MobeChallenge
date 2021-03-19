@@ -15,7 +15,13 @@ import androidx.core.graphics.ColorUtils;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private GameActivity context;
-    private Point circlePosition;
+    private Canvas canvas;
+
+    public void setInclinaison(double inclinaison) {
+        this.inclinaison = inclinaison;
+    }
+
+    private double inclinaison;
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
@@ -31,7 +37,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         contextHeight = displayMetrics.heightPixels;
         contextWidth = displayMetrics.widthPixels;
-        circlePosition = new Point(contextWidth / 2, contextHeight / 2);
 
 
     }
@@ -71,33 +76,27 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         super.draw(canvas);
         if (canvas != null) {
             canvas.drawColor(Color.WHITE);
+
             Paint paint = new Paint();
 
+            canvas.drawCircle(20,0+contextHeight, 100, paint);
 
-            float lightValue = context.getLightValue();
-            float maxLight = 1200;
-
-
-            float hue = (lightValue / maxLight) * 359.f;
-            int rgb = ColorUtils.HSLToColor(new float[]{hue, 1f, .6f});
-            int red = Color.red(rgb);
-            int green = Color.green(rgb);
-            int blue = Color.blue(rgb);
-
-
-            paint.setColor(Color.rgb(0, 0, 0));
-
-
-            canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+//
         }
     }
 
-    public Point getCirclePosition() {
-        return circlePosition;
+
+
+    public void goToGameOver(int score){
+        thread.setRunning(false);
+        //go to gameover activity
     }
 
-    public void setCirclePosition(Point circlePosition) {
-        this.circlePosition = circlePosition;
+    public void drawText(String text){
+
+            System.out.println("sensor text");
+
     }
+
 
 }
