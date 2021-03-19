@@ -46,7 +46,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private List<Birds> obstacles;
 
 
-    private float x0=100;
+    private float x0 = 100;
     private float y0;
     private float backgroundX;
     private float backgroundY;
@@ -54,7 +54,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private float t;
     private float v0;
     private float g;
-  
+
     public GameView(GameActivity context) {
         super(context);
         this.context = context;
@@ -65,20 +65,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         contextHeight = displayMetrics.heightPixels + getNavigationBarHeight(context);
         contextWidth = displayMetrics.widthPixels;
-        circlePosition = new Point(contextWidth / 2, contextHeight / 2);
+
         initBackground();
         lastDrawDate = new Date();
-      
+
         obstacles = new ArrayList<>();
         createRandomObstacle();
         createRandomObstacle();
 
 
-
         x0 = 100;
-        y0 = contextHeight/2;
+        y0 = contextHeight / 2;
         g = 0.5f;
-        a = (float) (Math.PI/4);
+        a = (float) (Math.PI / 4);
         v0 = 25;
 
     }
@@ -139,8 +138,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             Date d = new Date();
             long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
             lastDrawDate = d;
+            drawBackground(canvas, tempsPasse);
 
-            canvas.drawColor(Color.WHITE);
 
             Paint paint = new Paint();
             paint.setColor(Color.rgb(0, 0, 0));
@@ -149,37 +148,35 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawCircle(backgroundX, backgroundY, 50, paint);
 
             paint.setColor(Color.rgb(0, 0, 0));
-            drawBackground(canvas, tempsPasse);
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
         }
     }
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
+        bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         Rect srcRectForRender = new Rect(bgXPosition, bgHeight, bgXPosition + bgWidth, bgHeight * 2);
         Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
         canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
-        System.out.println(tempsPasse);
-        bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
+    }
 
-    public void createRandomObstacle(){
+    public void createRandomObstacle() {
         Random rand = new Random();
         int posy = rand.nextInt(contextHeight - OBSTACLE_HEIGHT) + OBSTACLE_HEIGHT;
-        Point obstaclePoint = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
-        obstacles.add(new Birds(obstaclePoint,randomBird()));
+        Point obstaclePoint = new Point(contextWidth - OBSTACLE_HEIGHT, posy);
+        obstacles.add(new Birds(obstaclePoint, randomBird()));
     }
 
 
-
     //A modifier en fonction de la position du background
-    public void drawAllObstacles(Canvas canvas){
+    public void drawAllObstacles(Canvas canvas) {
 
 
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.getP().x = obstacle.getP().x - 10;
-            System.out.println("x="+obstacle.getP().x);
-            if(obstacle.getP().x <= 0){
+            System.out.println("x=" + obstacle.getP().x);
+            if (obstacle.getP().x <= 0) {
 
                 obstacles.remove(obstacle);
                 System.out.println("Obstacle removed");
@@ -188,36 +185,36 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             myPaint.setColor(Color.rgb(0, 0, 0));
             myPaint.setStrokeWidth(10);
 
-          canvas.drawBitmap(obstacle.getB(), obstacle.getP().x, obstacle.getP().y, myPaint);
+            canvas.drawBitmap(obstacle.getB(), obstacle.getP().x, obstacle.getP().y, myPaint);
 
         }
     }
 
 
-    public void calculTrajectoire(){
-        backgroundX = (float) (cos(a)*v0*t + x0);
-        backgroundY = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
+    public void calculTrajectoire() {
+        backgroundX = (float) (cos(a) * v0 * t + x0);
+        backgroundY = (float) ((-0.5) * g * t * t + sin(a) * v0 * t + y0);
         //y = contextHeight - y;
-        t = t+0.25f;
+        t = t + 0.25f;
     }
 
     public void setInclinaison(double inclinaison) {
         this.inclinaison = inclinaison;
     }
 
-    public Bitmap randomBird(){
+    public Bitmap randomBird() {
         Resources res = getResources();
-        Bitmap bitmap=null;
+        Bitmap bitmap = null;
         Random rn = new Random();
         int answer = rn.nextInt(3) + 1;
         System.out.println(answer);
-        if(answer==1){
-            bitmap= BitmapFactory.decodeResource(res, R.drawable.birdpink);
+        if (answer == 1) {
+            bitmap = BitmapFactory.decodeResource(res, R.drawable.birdpink);
         }
-        if(answer==2){
+        if (answer == 2) {
             bitmap = BitmapFactory.decodeResource(res, R.drawable.birdblue);
         }
-        if(answer==3){
+        if (answer == 3) {
             bitmap = BitmapFactory.decodeResource(res, R.drawable.birdbrown);
         }
         Bitmap resized = Bitmap.createScaledBitmap(bitmap, 150, 150, true);
