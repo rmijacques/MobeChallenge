@@ -41,6 +41,18 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // FULLSCREEN
+        View decorView = getWindow().getDecorView();
+// Hide both the navigation bar and the status bar.
+// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+// a general rule, you should design your app to hide the status bar whenever you
+// hide the navigation bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        decorView.setSystemUiVisibility(uiOptions);
+
+
         sensitivity = 1.0;
 
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -152,7 +164,7 @@ public class GameActivity extends Activity implements SensorEventListener {
     }
 
     public void majsensitivityInfo() {
-     //   sensitivityInfo.setText(String.valueOf(sensitivity));
+        //   sensitivityInfo.setText(String.valueOf(sensitivity));
     }
 
     public float getLightValue() {
