@@ -14,14 +14,14 @@ import androidx.core.graphics.ColorUtils;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
-    private MainActivity context;
+    private GameActivity context;
     private Point circlePosition;
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
 
 
-    public GameView(MainActivity context) {
+    public GameView(GameActivity context) {
         super(context);
         this.context = context;
         setFocusable(true);
