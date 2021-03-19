@@ -5,12 +5,17 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
@@ -19,6 +24,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
+    public static int OBSTACLE_HEIGHT = 100;
+    private List<Point> obstacles;
 
 
     public GameView(GameActivity context) {
@@ -32,6 +39,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextHeight = displayMetrics.heightPixels;
         contextWidth = displayMetrics.widthPixels;
         circlePosition = new Point(contextWidth / 2, contextHeight / 2);
+
+        obstacles = new ArrayList<>();
+        createRandomObstacle();
+        createRandomObstacle();
 
 
     }
@@ -84,12 +95,49 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             int green = Color.green(rgb);
             int blue = Color.blue(rgb);
 
-
             paint.setColor(Color.rgb(0, 0, 0));
 
-
             canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+            drawAllObstacles(canvas);
         }
+    }
+
+
+
+    public void createRandomObstacle(){
+        Random rand = new Random();
+        int posy = rand.nextInt(contextHeight - OBSTACLE_HEIGHT) + OBSTACLE_HEIGHT;
+        Point obstacle = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
+        obstacles.add(obstacle);
+    }
+
+
+    //A modifier en fonction de la position du background
+    public void drawAllObstacles(Canvas canvas){
+        for (Point obstacle : obstacles) {
+            //modifier aussi le y en fonction du background
+            obstacle.x = obstacle.x - 10;
+            if(obstacle.x <= 0){
+                obstacles.remove(obstacle);
+                System.out.println("Obstacle removed");
+            }
+            Paint myPaint = new Paint();
+            myPaint.setColor(Color.rgb(0, 0, 0));
+            myPaint.setStrokeWidth(10);
+
+            canvas.drawRect(obstacle.x, obstacle.y, contextWidth -(contextWidth - obstacle.x- OBSTACLE_HEIGHT), obstacle.y+OBSTACLE_HEIGHT, myPaint);
+        }
+    }
+
+    public boolean checkIfPlayerHitAnyObstacle(){
+        for (Point obstacle : obstacles) {
+            if((circlePosition.x+100 >= obstacle.x && circlePosition.x <= obstacle.x + OBSTACLE_HEIGHT) || (circlePosition.y - 100 >= obstacle.y && circlePosition.y<=obstacle.y + OBSTACLE_HEIGHT))
+            {
+                System.out.println("Collision avec un obstacle haaaaaaaaaaaaaa");
+                return true;
+            }
+        }
+        return false;
     }
 
     public Point getCirclePosition() {
