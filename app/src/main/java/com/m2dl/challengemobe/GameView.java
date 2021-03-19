@@ -180,12 +180,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         Date d = new Date();
         long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
-        tempsGlobal += tempsPasse;
+
         lastDrawDate = d;
 
         Paint paint = new Paint();
         paint.setColor(Color.rgb(0, 0, 0));
         if (etat == gamestate.LAUNCHING) {
+            tempsGlobal += tempsPasse;
             drawBackground(canvas);
             calculTrajectoire();
             drawCloudAndTrees(canvas, tempsPasse);
@@ -201,9 +202,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             drawCloudAndTrees(canvas, tempsPasse);
         }
         drawJetPack(canvas);
-        paint.setColor(Color.rgb(0, 0, 0));
 
-        canvas.drawCircle(300, contextHeight / 2, 50, paint);
 
     }
 
@@ -248,7 +247,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
-        canvas.drawBitmap(rotatedBitmap, 30, contextHeight / 2, myPaint);
+        canvas.drawBitmap(rotatedBitmap, dragPoint.x-resized.getWidth(), dragPoint.y - resized.getHeight(), myPaint);
     }
 
     public void createRandomObstacle() {
