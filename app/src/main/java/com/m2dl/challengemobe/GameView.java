@@ -1,4 +1,5 @@
 package com.m2dl.challengemobe;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -10,7 +11,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
-
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,14 +18,13 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 
-
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
@@ -35,12 +34,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int contextHeight;
     private int contextWidth;
     private SharedPreferences sharedPref;
+    private int bgXPosition = 0;
+    private Bitmap bitmap;
+    private int bgHeight;
+    private int bgWidth;
+    private int bgFullWidth;
+    private Date lastDrawDate;
+    double vitesse = 1.2; // 12 km/h
 
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
 
 
-    private float x0=100;
+    private float x0 = 100;
     private float y0;
     private float backgroundX;
     private float backgroundY;
@@ -61,20 +67,40 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.sharedPref = context.getPreferences(Context.MODE_PRIVATE);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        contextHeight = displayMetrics.heightPixels;
+        contextHeight = displayMetrics.heightPixels + getNavigationBarHeight(context);
         contextWidth = displayMetrics.widthPixels;
 
+        initBackground();
+        lastDrawDate = new Date();
 
         obstacles = new ArrayList<>();
 
 
-
         x0 = 100;
-        y0 = contextHeight/2;
+        y0 = contextHeight / 2;
         g = 0.5f;
-        a = (float) (Math.PI/4);
+        a = (float) (Math.PI / 4);
         v0 = 25;
 
+    }
+
+    private void initBackground() {
+        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        bgHeight = (bitmap.getHeight()) / 2;
+        bgWidth = (bitmap.getWidth()) / 3;
+        bgFullWidth = bitmap.getWidth();
+    }
+
+    private int getNavigationBarHeight(GameActivity context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int usableHeight = metrics.heightPixels;
+        context.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        int realHeight = metrics.heightPixels;
+        if (realHeight > usableHeight)
+            return realHeight - usableHeight;
+        else
+            return 0;
     }
 
     public GameThread getThread() {
@@ -116,41 +142,50 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 createRandomObstacle();
                 System.out.println("create bird");
             }
+            Date d = new Date();
+            long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
+            lastDrawDate = d;
+            drawBackground(canvas, tempsPasse);
 
-            canvas.drawColor(Color.BLUE);
+
             Paint paint = new Paint();
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
             canvas.drawCircle(backgroundX, backgroundY, 50, paint);
 
-
-            canvas.drawCircle(20,0+contextHeight, 100, paint);
-            drawAllObstacles(canvas);
-
+            paint.setColor(Color.rgb(0, 0, 0));
+            // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
         }
     }
 
+    private void drawBackground(Canvas canvas, long tempsPasse) {
+        if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
+        bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
+        Rect srcRectForRender = new Rect(bgXPosition, bgHeight, bgXPosition + bgWidth, bgHeight * 2);
+        Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
+        canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
+    }
 
-
-
-    public void createRandomObstacle(){
+    public void createRandomObstacle() {
         Random rand = new Random();
         int posy = rand.nextInt(contextHeight - OBSTACLE_HEIGHT) + OBSTACLE_HEIGHT;
-        Point obstaclePoint = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
-        obstacles.add(new Birds(obstaclePoint,randomBird()));
+        Point obstaclePoint = new Point(contextWidth - OBSTACLE_HEIGHT, posy);
+        obstacles.add(new Birds(obstaclePoint, randomBird()));
     }
 
 
-
     //A modifier en fonction de la position du background
-    public void drawAllObstacles(Canvas canvas){
+    public void drawAllObstacles(Canvas canvas) {
 
 
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.getP().x = obstacle.getP().x -obstacle.getAccellerator();
             if(obstacle.getP().x <= 0){
+            obstacle.getP().x = obstacle.getP().x - 10;
+            System.out.println("x=" + obstacle.getP().x);
+            if (obstacle.getP().x <= 0) {
 
                 obstacles.remove(obstacle);
                 System.out.println("Obstacle removed");
@@ -159,36 +194,36 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             myPaint.setColor(Color.rgb(0, 0, 0));
             myPaint.setStrokeWidth(10);
 
-          canvas.drawBitmap(obstacle.getB(), obstacle.getP().x, obstacle.getP().y, myPaint);
+            canvas.drawBitmap(obstacle.getB(), obstacle.getP().x, obstacle.getP().y, myPaint);
 
         }
     }
 
 
-    public void calculTrajectoire(){
-        backgroundX = (float) (cos(a)*v0*t + x0);
-        backgroundY = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
+    public void calculTrajectoire() {
+        backgroundX = (float) (cos(a) * v0 * t + x0);
+        backgroundY = (float) ((-0.5) * g * t * t + sin(a) * v0 * t + y0);
         //y = contextHeight - y;
-        t = t+0.25f;
+        t = t + 0.25f;
     }
 
     public void setInclinaison(double inclinaison) {
         this.inclinaison = inclinaison;
     }
 
-    public Bitmap randomBird(){
+    public Bitmap randomBird() {
         Resources res = getResources();
-        Bitmap bitmap=null;
+        Bitmap bitmap = null;
         Random rn = new Random();
         int answer = rn.nextInt(3) + 1;
         System.out.println(answer);
-        if(answer==1){
-            bitmap= BitmapFactory.decodeResource(res, R.drawable.birdpink);
+        if (answer == 1) {
+            bitmap = BitmapFactory.decodeResource(res, R.drawable.birdpink);
         }
-        if(answer==2){
+        if (answer == 2) {
             bitmap = BitmapFactory.decodeResource(res, R.drawable.birdblue);
         }
-        if(answer==3){
+        if (answer == 3) {
             bitmap = BitmapFactory.decodeResource(res, R.drawable.birdbrown);
         }
         Bitmap resized = Bitmap.createScaledBitmap(bitmap, 150, 150, true);
