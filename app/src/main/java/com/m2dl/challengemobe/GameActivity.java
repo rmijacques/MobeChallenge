@@ -1,5 +1,6 @@
 package com.m2dl.challengemobe;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -91,6 +92,7 @@ public class GameActivity extends Activity implements SensorEventListener {
         startDate = new Date();
 
         gameLayout.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_MOVE){
