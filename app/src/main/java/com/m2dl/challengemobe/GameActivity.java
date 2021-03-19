@@ -10,7 +10,7 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
         gameView = new GameView(this);
-
+        setContentView(R.layout.game_layout);
     }
 
 }
