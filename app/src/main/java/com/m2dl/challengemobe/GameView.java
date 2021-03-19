@@ -204,13 +204,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         if(bgYPosition>=lastbypos) {
             matrix.postRotate(0);
+            lastbypos=bgYPosition;
         }
         else{
-            if(jeatpackincl<180){
+            if(jeatpackincl<120){
                 jeatpackincl+=5;
-                matrix.postRotate(jeatpackincl);
+
 
             }
+            matrix.postRotate(jeatpackincl);
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
