@@ -186,9 +186,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.getP().x = obstacle.getP().x -obstacle.getAccellerator();
-            if(obstacle.getP().x <= 0){
-            obstacle.getP().x = obstacle.getP().x - 10;
-            System.out.println("x=" + obstacle.getP().x);
+            if(obstacle.getP().x <= 0) {
+                obstacle.getP().x = obstacle.getP().x - 10;
+                System.out.println("x=" + obstacle.getP().x);
+            }
             if (obstacle.getP().x <= 0) {
 
                 obstacles.remove(obstacle);
@@ -214,7 +215,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (bgYPosition <= 0) bgYPosition = 0;
         System.out.println("bgx "+ bgXPosition);
         System.out.println("bgy "+ bgYPosition);
-
 
     }
 
