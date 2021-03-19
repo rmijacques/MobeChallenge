@@ -29,9 +29,13 @@ import static java.lang.Math.sin;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
-    public static enum gamestate {WAITING, LAUNCHING, LAUNCHED};
+    public static enum gamestate {WAITING, LAUNCHING, LAUNCHED}
 
-    static enum etat {WAITING, LAUNCHING, LAUNCHED};
+    ;
+
+    static enum etat {WAITING, LAUNCHING, LAUNCHED}
+
+    ;
     private Bitmap cloudsAndTreesBitmap;
     private int cloudsAndTreesHeight;
     private int cloudsAndTreesWidth;
@@ -53,10 +57,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int bgWidth;
     private int bgFullWidth;
     private double lastbypos;
-    private int jeatpackincl=0;
+    private int jeatpackincl = 0;
     private int bgFullHeight;
     private Date lastDrawDate;
-    double vitesse = 1.7; // 12 km/h
+    double vitesse = 1; // 12 km/h
     long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
@@ -64,9 +68,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean first = true;
 
 
-
     private float a;
-    private float g;
 
     private int newEnnemiTime = 150;
     private int newEnnemiCompteur = 0;
@@ -91,7 +93,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         obstacles = new ArrayList<>();
         createRandomObstacle();
 
-        g = 0.125f;
         a = (float) (Math.PI / 4);
 
     }
@@ -159,11 +160,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas == null) return;
-      
+
         newEnnemiCompteur += 1;
         if (checkNewEnnemiTime()) {
             createRandomObstacle();
-            System.out.println("create bird");
         }
         Date d = new Date();
         long tempsPasse = (d.getTime() - lastDrawDate.getTime()) / 10;
@@ -174,25 +174,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         Paint paint = new Paint();
         paint.setColor(Color.rgb(0, 0, 0));
-
-        calculTrajectoire();
+        if (etat == gamestate.WAITING)
+            calculTrajectoire();
         drawJetPack(canvas);
         paint.setColor(Color.rgb(0, 0, 0));
-              drawAllObstacles(canvas);
-            calculTrajectoire();
-
-            if(etat == gamestate.LAUNCHED)
-                paint.setColor(Color.rgb(200, 100, 100));
-            else
-                paint.setColor(Color.rgb(0, 0, 0));
-            canvas.drawCircle(200, contextHeight/2, 50, paint);
-            // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+        drawAllObstacles(canvas);
 
     }
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
-        //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
+        if (etat == gamestate.LAUNCHED)
+            bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
 
@@ -205,32 +198,30 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (cloudsAndTreesXPosition >= cloudsAndTreesFullWidth - cloudsAndTreesWidth)
             cloudsAndTreesXPosition = 0;
         cloudsAndTreesXPosition += (int) (tempsPasse * vitesse);
-        Rect srcRectForRender = new Rect((int) cloudsAndTreesXPosition, (int)(0 - bgYPosition), cloudsAndTreesXPosition + cloudsAndTreesWidth, (int) (cloudsAndTreesHeight - bgYPosition));
+        Rect srcRectForRender = new Rect((int) cloudsAndTreesXPosition, (int) (0 - bgYPosition), cloudsAndTreesXPosition + cloudsAndTreesWidth, (int) (cloudsAndTreesHeight - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, contextHeight);
         canvas.drawBitmap(cloudsAndTreesBitmap, srcRectForRender, dstRectForRender, null);
     }
-    public void drawJetPack(Canvas canvas){
+
+    public void drawJetPack(Canvas canvas) {
         Resources res = getResources();
         Bitmap bitmapJetPack = BitmapFactory.decodeResource(res, R.drawable.jetpack);
         Paint myPaint = new Paint();
         Bitmap resized = Bitmap.createScaledBitmap(bitmapJetPack, 250, 250, true);
         Matrix matrix = new Matrix();
 
-        if(bgYPosition>=lastbypos) {
+        if (bgYPosition >= lastbypos) {
             matrix.postRotate(0);
-            lastbypos=bgYPosition;
-        }
-        else{
-            if(jeatpackincl<120){
-                jeatpackincl+=5;
-
-
+            lastbypos = bgYPosition;
+        } else {
+            if (jeatpackincl < 120) {
+                jeatpackincl += 5;
             }
             matrix.postRotate(jeatpackincl);
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
-        canvas.drawBitmap(rotatedBitmap,30, contextHeight/2,  myPaint);
+        canvas.drawBitmap(rotatedBitmap, 30, contextHeight / 2, myPaint);
     }
 
     public void createRandomObstacle() {
@@ -243,19 +234,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     //A modifier en fonction de la position du background
     public void drawAllObstacles(Canvas canvas) {
-
-
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.getP().x = obstacle.getP().x - obstacle.getAccellerator();
             if (obstacle.getP().x <= 0) {
                 obstacle.getP().x = obstacle.getP().x - 10;
-                System.out.println("x=" + obstacle.getP().x);
             }
             if (obstacle.getP().x <= 0) {
 
                 obstacles.remove(obstacle);
-                System.out.println("Obstacle removed");
             }
             Paint myPaint = new Paint();
             myPaint.setColor(Color.rgb(0, 0, 0));
@@ -269,14 +256,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void calculTrajectoire() {
         double v = vitesse * 20;
-        bgXPosition = (cos(a) * v * tempsGlobal);
+        double g = 0.1;
+
+        bgXPosition = ((cos(a) * v * tempsGlobal) * bgWidth) / (v * tempsGlobal);
         bgYPosition = ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
-        if (bgYPosition <= 0){
+        if (bgYPosition <= 0) {
             bgYPosition = 0;
-            if(!first) etat=gamestate.LAUNCHED;
-            else first=false;
+            if (!first) etat = gamestate.LAUNCHED;
+            else first = false;
         }
     }
 
@@ -289,7 +278,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         Bitmap bitmap = null;
         Random rn = new Random();
         int answer = rn.nextInt(3) + 1;
-        System.out.println(answer);
         if (answer == 1) {
             bitmap = BitmapFactory.decodeResource(res, R.drawable.birdpink);
         }
