@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -44,6 +45,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int bgHeight;
     private int bgWidth;
     private int bgFullWidth;
+    private double lastbypos;
+    private int jeatpackincl=0;
     private int bgFullHeight;
     private Date lastDrawDate;
     double vitesse = 1.2; // 12 km/h
@@ -154,8 +157,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
-            canvas.drawCircle(200, contextHeight/2, 50, paint);
-
+            drawJetPack(canvas);
             paint.setColor(Color.rgb(0, 0, 0));
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
         }
@@ -169,6 +171,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         Rect srcRectForRender = new Rect((int)bgXPosition, (int)(bgHeight-bgYPosition), (int)(bgXPosition + bgWidth), (int)(bgHeight * 2 - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
         canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
+    }
+    public void drawJetPack(Canvas canvas){
+        Resources res = getResources();
+        Bitmap bitmapJetPack = BitmapFactory.decodeResource(res, R.drawable.jetpack);
+        Paint myPaint = new Paint();
+        Bitmap resized = Bitmap.createScaledBitmap(bitmapJetPack, 250, 250, true);
+        Matrix matrix = new Matrix();
+
+        if(bgYPosition>=lastbypos) {
+            matrix.postRotate(0);
+        }
+        else{
+            if(jeatpackincl<180){
+                jeatpackincl+=5;
+                matrix.postRotate(jeatpackincl);
+
+            }
+        }
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
+        canvas.drawBitmap(rotatedBitmap,30, contextHeight/2,  myPaint);
+
+
     }
 
     public void createRandomObstacle() {
