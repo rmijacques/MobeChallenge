@@ -29,7 +29,7 @@ import static java.lang.Math.toIntExact;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
-    static enum etat {WAITING, LAUNCHING, LAUNCHED};
+    public static enum gamestate {WAITING, LAUNCHING, LAUNCHED};
 
     private GameThread thread;
     private GameActivity context;
@@ -50,8 +50,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
-
-
+    private gamestate etat;
+    private boolean first = true;
 
 
     private float a;
@@ -63,6 +63,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public GameView(GameActivity context) {
         super(context);
+        etat = gamestate.WAITING;
         this.context = context;
         setFocusable(true);
         getHolder().addCallback(this);
@@ -154,9 +155,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
-            canvas.drawCircle(200, contextHeight/2, 50, paint);
 
-            paint.setColor(Color.rgb(0, 0, 0));
+            if(etat == gamestate.LAUNCHED)
+                paint.setColor(Color.rgb(200, 100, 100));
+            else
+                paint.setColor(Color.rgb(0, 0, 0));
+            canvas.drawCircle(200, contextHeight/2, 50, paint);
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
         }
     }
@@ -166,6 +170,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
+
         Rect srcRectForRender = new Rect((int)bgXPosition, (int)(bgHeight-bgYPosition), (int)(bgXPosition + bgWidth), (int)(bgHeight * 2 - bgYPosition));
         Rect dstRectForRender = new Rect(0, 0, contextWidth, 800);
         canvas.drawBitmap(bitmap, srcRectForRender, dstRectForRender, null);
@@ -213,8 +218,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //bgXPosition = bgXPosition + (int) (tempsPasse * vitesse);
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
         if (bgYPosition <= 0) bgYPosition = 0;
-        System.out.println("bgx "+ bgXPosition);
-        System.out.println("bgy "+ bgYPosition);
+
+        if (bgYPosition <= 0){
+
+            if(!first) etat=gamestate.LAUNCHED;
+            else first=false;
+        }
+
+
+        //if (bgYPosition) etat=gamestate.LAUNCHED;
 
     }
 
