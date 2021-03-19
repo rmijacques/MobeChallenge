@@ -49,6 +49,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private float v0;
     private float g;
 
+    private int newEnnemiTime=150;
+    private int newEnnemiCompteur=0;
+
 
     public GameView(GameActivity context) {
         super(context);
@@ -63,8 +66,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
         obstacles = new ArrayList<>();
-        createRandomObstacle();
-        createRandomObstacle();
 
 
 
@@ -110,6 +111,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
+            newEnnemiCompteur+=1;
+            if(checkNewEnnemiTime()){
+                createRandomObstacle();
+                System.out.println("create bird");
+            }
 
             canvas.drawColor(Color.BLUE);
             Paint paint = new Paint();
@@ -144,7 +150,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.getP().x = obstacle.getP().x - 10;
-            System.out.println("x="+obstacle.getP().x);
             if(obstacle.getP().x <= 0){
 
                 obstacles.remove(obstacle);
@@ -188,6 +193,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         Bitmap resized = Bitmap.createScaledBitmap(bitmap, 150, 150, true);
         return resized;
+    }
+
+    public boolean checkNewEnnemiTime() {
+        Boolean res=false;
+        if (newEnnemiCompteur>= newEnnemiTime){
+            newEnnemiCompteur=0;
+            res=true;
+        }
+        else{
+            newEnnemiCompteur+=1;
+        }
+        return res;
     }
 
 
