@@ -29,7 +29,7 @@ import static java.lang.Math.sin;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
-
+    public static enum gamestate {WAITING, LAUNCHING, LAUNCHED};
 
     static enum etat {WAITING, LAUNCHING, LAUNCHED};
     private Bitmap cloudsAndTreesBitmap;
@@ -38,10 +38,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int cloudsAndTreesFullWidth;
     private int cloudsAndTreesFullHeight;
     private int cloudsAndTreesXPosition = 0;
-
-    static enum etat {WAITING, LAUNCHING, LAUNCHED}
-
-    ;
 
     private GameThread thread;
     private GameActivity context;
@@ -64,6 +60,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     long tempsGlobal = 0;
     public static int OBSTACLE_HEIGHT = 100;
     private List<Birds> obstacles;
+    private gamestate etat;
+    private boolean first = true;
+
 
 
     private float a;
@@ -75,6 +74,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public GameView(GameActivity context) {
         super(context);
+        etat = gamestate.WAITING;
         this.context = context;
         setFocusable(true);
         getHolder().addCallback(this);
@@ -179,8 +179,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         drawJetPack(canvas);
         paint.setColor(Color.rgb(0, 0, 0));
               drawAllObstacles(canvas);
+            calculTrajectoire();
 
-
+            if(etat == gamestate.LAUNCHED)
+                paint.setColor(Color.rgb(200, 100, 100));
+            else
+                paint.setColor(Color.rgb(0, 0, 0));
+            canvas.drawCircle(200, contextHeight/2, 50, paint);
+            // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
+        }
     }
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
@@ -222,8 +229,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
         canvas.drawBitmap(rotatedBitmap,30, contextHeight/2,  myPaint);
-
-
     }
 
     public void createRandomObstacle() {
@@ -266,11 +271,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         bgYPosition = ((-0.5) * g * tempsGlobal * tempsGlobal + sin(a) * v * tempsGlobal);
         if (bgXPosition >= bgFullWidth - bgWidth) bgXPosition = 0;
         if (bgYPosition >= bgFullHeight - bgHeight) bgYPosition = bgHeight;
-
-        if (bgYPosition <= 0) bgYPosition = 0;
-        System.out.println("bgx " + bgXPosition);
-        System.out.println("bgy " + bgYPosition);
-
+        if (bgYPosition <= 0){
+            bgYPosition = 0;
+            if(!first) etat=gamestate.LAUNCHED;
+            else first=false;
+        }
     }
 
     public void setInclinaison(double inclinaison) {
