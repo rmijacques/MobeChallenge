@@ -187,7 +187,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 paint.setColor(Color.rgb(0, 0, 0));
             canvas.drawCircle(200, contextHeight/2, 50, paint);
             // canvas.drawCircle(circlePosition.x, circlePosition.y, 100, paint);
-        }
+
     }
 
     private void drawBackground(Canvas canvas, long tempsPasse) {
