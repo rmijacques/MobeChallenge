@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Date;
+import java.util.List;
 
 public class GameActivity extends Activity implements SensorEventListener {
     private SensorManager sensorManager;
@@ -75,6 +76,8 @@ public class GameActivity extends Activity implements SensorEventListener {
         setUpSensors();
 
         startDate = new Date();
+
+
         gameView.post(new Runnable() {
             @Override
             public void run() {
@@ -135,6 +138,7 @@ public class GameActivity extends Activity implements SensorEventListener {
             // de -90 à 90
             gameView.setInclinaison(tilt);
         }
+
     }
 
     private void checkGameOver(float x, float y) {
@@ -143,13 +147,8 @@ public class GameActivity extends Activity implements SensorEventListener {
                 (gameViewHeight < (rayonBalle + y) || (y - rayonBalle) < 0)) {
             // TODO: aller a l'activité Game Over avec le
             long score = (new Date().getTime() - startDate.getTime()) / 1000;
-            if (!gameOver) {
-                gameOver = true;
-            }
-
-            System.out.println("le jeu est terminé et le score est : " +
-                    (new Date().getTime() - startDate.getTime()) / 1000);
         }
+
     }
 
     @Override

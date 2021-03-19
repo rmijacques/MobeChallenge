@@ -5,12 +5,22 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
+
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
@@ -26,6 +36,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int contextWidth;
     private SharedPreferences sharedPref;
 
+    public static int OBSTACLE_HEIGHT = 100;
+    private List<Point> obstacles;
+
+
+    private float x0=100;
+    private float y0;
+    private float x;
+    private float y;
+    private float a;
+    private float t;
+    private float v0;
+    private float g;
+
 
     public GameView(GameActivity context) {
         super(context);
@@ -38,6 +61,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         contextHeight = displayMetrics.heightPixels;
         contextWidth = displayMetrics.widthPixels;
 
+
+        obstacles = new ArrayList<>();
+        createRandomObstacle();
+        createRandomObstacle();
+
+
+
+        x0 = 100;
+        y0 = contextHeight/2;
+        g = 0.5f;
+        a = (float) (Math.PI/4);
+        v0 = 25;
 
     }
 
@@ -75,7 +110,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
         if (canvas != null) {
-            canvas.drawColor(Color.WHITE);
+
+            canvas.drawColor(Color.BLUE);
+            Paint paint = new Paint();
+            paint.setColor(Color.rgb(0, 0, 0));
+
+            calculTrajectoire();
+            canvas.drawCircle(x, y, 50, paint);
+
 
             Paint paint = new Paint();
 
@@ -90,12 +132,62 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void goToGameOver(int score){
         thread.setRunning(false);
         //go to gameover activity
+            paint.setColor(Color.rgb(0, 0, 0));
+            calculTrajectoire();
+            
+
+            canvas.drawCircle(x,y, 100, paint);
+            drawAllObstacles(canvas);
+        }
     }
 
-    public void drawText(String text){
 
-            System.out.println("sensor text");
 
+    public void createRandomObstacle(){
+        Random rand = new Random();
+        int posy = rand.nextInt(contextHeight - OBSTACLE_HEIGHT) + OBSTACLE_HEIGHT;
+        Point obstacle = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
+        obstacles.add(obstacle);
+    }
+
+
+
+    //A modifier en fonction de la position du background
+    public void drawAllObstacles(Canvas canvas){
+        for (Point obstacle : obstacles) {
+            //modifier aussi le y en fonction du background
+            obstacle.x = obstacle.x - 10;
+            if(obstacle.x <= 0){
+                obstacles.remove(obstacle);
+                System.out.println("Obstacle removed");
+            }
+            Paint myPaint = new Paint();
+            myPaint.setColor(Color.rgb(0, 0, 0));
+            myPaint.setStrokeWidth(10);
+
+            canvas.drawRect(obstacle.x, obstacle.y, contextWidth -(contextWidth - obstacle.x- OBSTACLE_HEIGHT), obstacle.y+OBSTACLE_HEIGHT, myPaint);
+        }
+    }
+
+    public boolean checkIfPlayerHitAnyObstacle(){
+        for (Point obstacle : obstacles) {
+            if((circlePosition.x+100 >= obstacle.x && circlePosition.x <= obstacle.x + OBSTACLE_HEIGHT) || (circlePosition.y - 100 >= obstacle.y && circlePosition.y<=obstacle.y + OBSTACLE_HEIGHT))
+            {
+                System.out.println("Collision avec un obstacle haaaaaaaaaaaaaa");
+                return true;
+            }
+
+        }
+        return false;
+    }
+    public void calculTrajectoire(){
+        x = (float) (cos(a)*v0*t + x0);
+        y = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
+        //y = contextHeight - y;
+        t = t+0.25f;
+    }
+    public Point getCirclePosition() {
+        return circlePosition;
     }
 
 
