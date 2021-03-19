@@ -103,18 +103,52 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.equals(lightSensor)) {
+            lightValue = sensorEvent.values[0];
+        } else if (sensorEvent.sensor.equals(gameRotationVectorSensor)) {
+            double pitch;
+            double tilt;
+            double azimuth;
+            double[] g = convertFloatsToDoubles(sensorEvent.values.clone());
+
+            //Normalise
+            double norm = Math.sqrt(g[0] * g[0] + g[1] * g[1] + g[2] * g[2] + g[3] * g[3]);
+            g[0] /= norm;
+            g[1] /= norm;
+            g[2] /= norm;
+            g[3] /= norm;
+
+            //Set values to commonly known quaternion letter representatives
+            double x = g[0];
+            double y = g[1];
+            double z = g[2];
+            double w = g[3];
+
+            //Calculate Pitch in degrees (-180 to 180)
+            double sinP = 2.0 * (w * x + y * z);
+            double cosP = 1.0 - 2.0 * (x * x + y * y);
+            pitch = Math.atan2(sinP, cosP) * (180 / Math.PI);
+
+            //Calculate Tilt in degrees (-90 to 90)
+            double sinT = 2.0 * (w * y - z * x);
+            if (Math.abs(sinT) >= 1)
+                tilt = Math.copySign(Math.PI / 2, sinT) * (180 / Math.PI);
+            else
+                tilt = Math.asin(sinT) * (180 / Math.PI);
+            // de -90 à 90
+            gameView.setInclinaison(tilt);
+        }
 
     }
 
     private void checkGameOver(float x, float y) {
         float rayonBalle = 100;
-
-        if (y - rayonBalle < 0) {
-            if (!gameOver) {
-                gameOver = true;
-            }
-            System.out.println("le jeu est terminé et le score est : Vous avez touché le sol !!!!! ");
+        if ((gameViewWidth < (rayonBalle + x) || (x - rayonBalle) < 0) ||
+                (gameViewHeight < (rayonBalle + y) || (y - rayonBalle) < 0)) {
+            // TODO: aller a l'activité Game Over avec le
+            long score = (new Date().getTime() - startDate.getTime()) / 1000;
         }
+
     }
 
     @Override
@@ -145,6 +179,19 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     public float getLightValue() {
         return lightValue;
+    }
+
+    private double[] convertFloatsToDoubles(float[] input)
+    {
+        if (input == null)
+            return null;
+
+        double[] output = new double[input.length];
+
+        for (int i = 0; i < input.length; i++)
+            output[i] = input[i];
+
+        return output;
     }
 
 
