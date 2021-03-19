@@ -247,7 +247,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), matrix, true);
-        canvas.drawBitmap(rotatedBitmap, dragPoint.x-resized.getWidth(), dragPoint.y - resized.getHeight(), myPaint);
+        if (etat.equals(gamestate.WAITING)) {
+            canvas.drawBitmap(rotatedBitmap, dragPoint.x - resized.getWidth() / 2, dragPoint.y - resized.getHeight() / 2, myPaint);
+        } else {
+            canvas.drawBitmap(rotatedBitmap, resized.getWidth() / 2, resized.getHeight() / 2, myPaint);
+        }
     }
 
     public void createRandomObstacle() {
