@@ -103,20 +103,7 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.equals(lightSensor)) {
-            lightValue = sensorEvent.values[0];
-        } else if (sensorEvent.sensor.equals(gameRotationVectorSensor)) {
-            float x = sensorEvent.values[1];
-            float y = sensorEvent.values[0];
-            Point point = gameView.getCirclePosition();
-            point.x += x * 150 * sensitivity;
-            point.y += y * 150 * sensitivity;
-            gameView.setCirclePosition(point);
 
-            if (!(gameViewHeight == null || gameViewWidth == null)) {
-                checkGameOver(point.x, point.y);
-            }
-        }
     }
 
     private void checkGameOver(float x, float y) {
