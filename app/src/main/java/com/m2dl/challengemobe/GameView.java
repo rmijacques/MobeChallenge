@@ -1,10 +1,16 @@
 package com.m2dl.challengemobe;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
+
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -31,7 +37,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private SharedPreferences sharedPref;
 
     public static int OBSTACLE_HEIGHT = 100;
-    private List<Point> obstacles;
+    private List<Birds> obstacles;
 
 
     private float x0=100;
@@ -114,9 +120,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
             canvas.drawCircle(20,0+contextHeight, 100, paint);
-
-
             drawAllObstacles(canvas);
+
         }
     }
 
@@ -126,19 +131,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void createRandomObstacle(){
         Random rand = new Random();
         int posy = rand.nextInt(contextHeight - OBSTACLE_HEIGHT) + OBSTACLE_HEIGHT;
-        Point obstacle = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
-        obstacles.add(obstacle);
+        Point obstaclePoint = new Point(contextWidth-OBSTACLE_HEIGHT,posy);
+        obstacles.add(new Birds(obstaclePoint,randomBird()));
     }
 
 
 
     //A modifier en fonction de la position du background
     public void drawAllObstacles(Canvas canvas){
-        for (Point obstacle : obstacles) {
+
+
+        for (Birds obstacle : obstacles) {
             //modifier aussi le y en fonction du background
-            obstacle.x = obstacle.x - 10;
-            int tempObstacleY = Math.round(backgroundY) - obstacle.y;
-            if(obstacle.x <= 0){
+            obstacle.getP().x = obstacle.getP().x - 10;
+            System.out.println("x="+obstacle.getP().x);
+            if(obstacle.getP().x <= 0){
+
                 obstacles.remove(obstacle);
                 System.out.println("Obstacle removed");
             }
@@ -146,7 +154,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             myPaint.setColor(Color.rgb(0, 0, 0));
             myPaint.setStrokeWidth(10);
 
-            canvas.drawRect(obstacle.x, tempObstacleY, contextWidth -(contextWidth - obstacle.x- OBSTACLE_HEIGHT), tempObstacleY+OBSTACLE_HEIGHT, myPaint);
+          canvas.drawBitmap(obstacle.getB(), obstacle.getP().x, obstacle.getP().y, myPaint);
+
         }
     }
 
@@ -162,7 +171,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.inclinaison = inclinaison;
     }
 
-
+    public Bitmap randomBird(){
+        Resources res = getResources();
+        Bitmap bitmap=null;
+        Random rn = new Random();
+        int answer = rn.nextInt(3) + 1;
+        System.out.println(answer);
+        if(answer==1){
+            bitmap= BitmapFactory.decodeResource(res, R.drawable.birdpink);
+        }
+        if(answer==2){
+            bitmap = BitmapFactory.decodeResource(res, R.drawable.birdblue);
+        }
+        if(answer==3){
+            bitmap = BitmapFactory.decodeResource(res, R.drawable.birdbrown);
+        }
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, 150, 150, true);
+        return resized;
+    }
 
 
 }
