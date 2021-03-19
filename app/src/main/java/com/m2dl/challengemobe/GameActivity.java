@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Date;
+import java.util.List;
 
 public class GameActivity extends Activity implements SensorEventListener {
     private SensorManager sensorManager;
@@ -75,6 +76,8 @@ public class GameActivity extends Activity implements SensorEventListener {
         setUpSensors();
 
         startDate = new Date();
+
+
         gameView.post(new Runnable() {
             @Override
             public void run() {
@@ -105,15 +108,12 @@ public class GameActivity extends Activity implements SensorEventListener {
 
     private void checkGameOver(float x, float y) {
         float rayonBalle = 100;
-        if ((gameViewWidth < (rayonBalle + x) || (x - rayonBalle) < 0) ||
-                (gameViewHeight < (rayonBalle + y) || (y - rayonBalle) < 0)) {
-            long score = (new Date().getTime() - startDate.getTime()) / 1000;
+
+        if (y - rayonBalle < 0) {
             if (!gameOver) {
                 gameOver = true;
             }
-
-            System.out.println("le jeu est terminé et le score est : " +
-                    (new Date().getTime() - startDate.getTime()) / 1000);
+            System.out.println("le jeu est terminé et le score est : Vous avez touché le sol !!!!! ");
         }
     }
 
