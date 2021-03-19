@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -37,8 +36,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private float x0=100;
     private float y0;
-    private float x;
-    private float y;
+    private float backgroundX;
+    private float backgroundY;
     private float a;
     private float t;
     private float v0;
@@ -111,17 +110,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(Color.rgb(0, 0, 0));
 
             calculTrajectoire();
-            canvas.drawCircle(x, y, 50, paint);
+            canvas.drawCircle(backgroundX, backgroundY, 50, paint);
 
 
             canvas.drawCircle(20,0+contextHeight, 100, paint);
 
-//
+
+            drawAllObstacles(canvas);
         }
     }
-
-
-
 
 
 
@@ -140,6 +137,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         for (Point obstacle : obstacles) {
             //modifier aussi le y en fonction du background
             obstacle.x = obstacle.x - 10;
+            int tempObstacleY = Math.round(backgroundY) - obstacle.y;
             if(obstacle.x <= 0){
                 obstacles.remove(obstacle);
                 System.out.println("Obstacle removed");
@@ -148,14 +146,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             myPaint.setColor(Color.rgb(0, 0, 0));
             myPaint.setStrokeWidth(10);
 
-            canvas.drawRect(obstacle.x, obstacle.y, contextWidth -(contextWidth - obstacle.x- OBSTACLE_HEIGHT), obstacle.y+OBSTACLE_HEIGHT, myPaint);
+            canvas.drawRect(obstacle.x, tempObstacleY, contextWidth -(contextWidth - obstacle.x- OBSTACLE_HEIGHT), tempObstacleY+OBSTACLE_HEIGHT, myPaint);
         }
     }
 
 
     public void calculTrajectoire(){
-        x = (float) (cos(a)*v0*t + x0);
-        y = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
+        backgroundX = (float) (cos(a)*v0*t + x0);
+        backgroundY = (float) ((-0.5)*g*t*t + sin(a)*v0*t + y0);
         //y = contextHeight - y;
         t = t+0.25f;
     }
