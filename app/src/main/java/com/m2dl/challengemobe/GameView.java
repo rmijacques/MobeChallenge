@@ -199,7 +199,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             drawCloudAndTrees(canvas, tempsPasse);
         }
         drawJetPack(canvas);
-        drawAllObstacles(canvas);
 
 
     }
@@ -305,9 +304,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             System.out.println(jeatpackincl);
             if (jetpackYpos < contextHeight+20 && jeatpackincl < 100) {
                 jetpackYpos = (int) (jetpackYpos + 10);
+                System.out.println("dessend");
             }
             else if(jetpackYpos >= 0 && (jeatpackincl > 100 || jeatpackincl<-100)) {
                 jetpackYpos = (int) (jetpackYpos - 10);
+                System.out.println("monte");
+
+
             }
             System.out.println(bgYPosition);
         }
@@ -345,6 +348,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean hasCollidedWithBird(int xPlayer, int yPlayer) {
         for (Birds bird : obstacles) {
             if (xPlayer + 100 >= bird.getP().x && xPlayer <= bird.getP().x + 100 && yPlayer + 100 >= bird.getP().y && yPlayer <= bird.getP().y) {
+                System.out.println("COLLISSSIOOISIISNSJOSIDISDOIS");
                 return true;
             }
         }
